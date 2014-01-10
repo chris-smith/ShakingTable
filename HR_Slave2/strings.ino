@@ -46,8 +46,10 @@ String getToken(String msg, const int num)
 }
 
 //Once the numth token is reached, returns rest of the string
-// Ex) For string "how-does-this-work",
-//      asking for 3rd token returns "this-work"s
+/* Example Usage
+    rest = getTokenToEnd("this-is-a-test", 2)
+    rest == "a-test"
+**********************************************************/
 String getTokenToEnd(String msg, const int num)
 {
   String token = "";

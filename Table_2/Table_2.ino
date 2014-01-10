@@ -1,15 +1,25 @@
+/*
+
+    This is the main code used to run the Shaking Table
+    @Boston Children's Hospital by Jason Kahn
+    Mostly setup to communicate with HR's at this point
+
+*/
+
 #include <ShiftBrite.h>
 #include <SoftwareSerial.h>
 #include "ShiftRegister.h"
 
-// This is currently set as such due to the ShiftBrite
-// library only working with up 2 4 shiftBrites
+// ShiftBrite and ShiftRegister libraries only work
+// with up to 4 wired in series, limits concurrent table users
 #define maxUsers 4
 
 String msg_rcv;
 
+// Specifies user
 ShiftBrite shiftbrite(4);
-ShiftRegister shift_register(1);
+// Display's user's Emotional State
+ShiftRegister shift_register(4);
 
 //    XBEE VARS
 SoftwareSerial xbee(2,5); // RX, TX
@@ -20,6 +30,8 @@ String slaveID;      //  this xbee's unique ID
 long timeout;        //  time spent waiting for message from listenTo
 boolean registered;  //  tracks whether this slave is registered with master
 
+
+// Tracks user data
 int numUsers;
 int heart_rates[maxUsers];    // holds heart rate for each HR
 int thresholds[maxUsers];     // holds threshold for each HR
@@ -28,25 +40,29 @@ boolean flashing[maxUsers];   // determines whether to flash lights (if HR > thr
 String ids[maxUsers];         // holds ids for each HR
 String colors[maxUsers];      // holds colors for each HR
 
-
+// debug
 boolean ascend;      // for testing shift register output
 
 void setup()
 {
+  // Start XBee
   xbee.begin(57600);
- 
   xbee.println("starting");
+  
+  //  no HR's registered at start
   numUsers = 0;
   init_arrays();
-  slaveID = "table";
+  
+  slaveID = "table";   // Table's identifier
   listenTo = "master"; // This is the ipad app
   timeout = 500;
   ascend = true;
-  shiftbrite.setColor(3,"red");
+  // shiftbrite.setColor(3,"red"); // debug 
 }
 
 void init_arrays()
 {
+  // intializes user data arrays
   for(int i = 0; i < maxUsers; i++){
    heart_rates[i] = 85; 
    thresholds[i] = 100;
@@ -59,18 +75,26 @@ void init_arrays()
 
 void loop()
 {
+  // check for new HR monitors
   newHRMonitors();
+  // Ask for HR Values
   queryHeartRates();
+  // Set indicator Light Levels
   setOutputs();
-  shiftbrite.setColor(3,"red");
+  // shiftbrite.setColor(3,"red");
+  
+  // Send Master user data, get commands
+  // talking with master may need to be implemented differently
   talkToMaster();
+  
   // msg_rcv = readXbee();
   // handleMsg(msg_rcv);
-  delay(00);
+  delay(20);
 }
 
 boolean isValidID(String id)
 {
+  // checks if id matches with those registered with the table
   for(int i = 0; i < numUsers; i++){
    if(id == ids[i])
     return true;
@@ -92,6 +116,7 @@ void setOutputs()
   double level;
   for (int i = 0; i < numUsers; i++)
   {
+    // for each user, set ShiftRegister
     //Serial.print("HR: "); Serial.println(heart_rates[i]);
     //Serial.print("Thresh: "); Serial.println(thresholds[i]);
     int dif = heart_rates[i] - thresholds[i];
@@ -136,13 +161,15 @@ void setOutputs()
       
     for (int j = 0; j < 7; j++)
     {
+      // set lights
       if ( j < level)
         shift_register.setRegisterPin(7*i + j, on);
       else
         shift_register.setRegisterPin(7*i + j, LOW);
     }
     
-    /* testing that Shift Registers work
+    /* 
+    // Testing that Shift Registers work
     if (ascend){
       heart_rates[i]++;
       if (heart_rates[i] >= 115)
@@ -154,5 +181,7 @@ void setOutputs()
         ascend = true;
     }*/
   }
+  
+  // Tell shift registers to adjust their values
   shift_register.writeRegisters();
 }
