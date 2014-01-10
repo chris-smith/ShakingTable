@@ -1,12 +1,12 @@
 #include "ShiftRegister.h" //include the declaration for this class
 
-int SER_Pin = 4;   //pin 14 on the 75HC595 -- Input for next value shifted in
-int RCLK_Pin = 6;  //pin 12 on the 75HC595 -- Shifts register when pulled High
-int SRCLK_Pin = 7; //pin 11 on the 75HC595 -- Sets output when pulled High
+int SER_Pin = 4;   // Input for next value shifted in
+int RCLK_Pin = 6;  // Shifts register when pulled High
+int SRCLK_Pin = 7; // Sets output when pulled High
 
 
 ShiftRegister::ShiftRegister(){
-  //Serial.println("Shift Register Setup");
+  // Default constructor
   pinMode(SER_Pin, OUTPUT);
   pinMode(RCLK_Pin, OUTPUT);
   pinMode(SRCLK_Pin, OUTPUT);
@@ -20,7 +20,7 @@ ShiftRegister::ShiftRegister(){
 }
 
 ShiftRegister::ShiftRegister(int registers){
-  //Serial.println("Shift Register Setup");
+  // Specify the number of shift registers wired together
   pinMode(SER_Pin, OUTPUT);
   pinMode(RCLK_Pin, OUTPUT);
   pinMode(SRCLK_Pin, OUTPUT);
@@ -65,7 +65,7 @@ void ShiftRegister::clearRegisters(){
 //Set and display registers
 //Only call AFTER all values are set how you would like (slow otherwise)
 void ShiftRegister::writeRegisters(){
-
+  
   digitalWrite(RCLK_Pin, LOW);
 
   for(int i = _numOfRegisterPins - 1; i >=  0; i--){
@@ -95,19 +95,3 @@ void ShiftRegister::setRegisters(){
    }
  }
 }
-
-
-/*void loop(){
-
-  /*setRegisterPin(2, HIGH);
-  setRegisterPin(3, HIGH);
-  setRegisterPin(4, LOW);
-  setRegisterPin(5, HIGH);
-  setRegisterPin(7, HIGH);*/
-  /*
-  regVals[0] = 7;
-  setRegisters();
-
-  writeRegisters();  //MUST BE CALLED TO DISPLAY CHANGES
-  //Only call once after the values are set how you need.
-}*/
