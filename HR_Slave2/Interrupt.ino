@@ -1,5 +1,5 @@
-//This is necessary for calculating HR
-
+// Hardware Interrupt code for calculating Heart Rate
+// Taken from http://pulsesensor.myshopify.com/pages/code-and-guide
 
 volatile int rate[10];                    // used to hold last ten IBI values
 volatile unsigned long sampleCounter = 0;          // used to determine pulse timing

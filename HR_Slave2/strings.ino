@@ -1,36 +1,44 @@
+ /* 
+
+  This code used by xbee.ino for 
+      - deserializing messages
+      - converting between strings and objects
+      - padding strings      
+      
+ */
+
+
 // For strings formatted as ___-____-___, returns the numth member
 // Zero indexed
+//   Example:  getToken("this-is-an-example", 2) returns "an"
 String getToken(String msg, const int num)
 {
-  //xbee.print("num: ");xbee.println(num);
   String token = "";
   int index = -1;
   int to = 0;
   int i = 0;
   while(i <= num)
   {
-    //xbee.println(msg);
-    //xbee.print("i: ");xbee.println(i);
     index = msg.indexOf("-", 1);
-    //xbee.print("index: ");xbee.println(index);
     if (index + i < 0)
     {
-      //error
+      // Error -- I don't think code currently cares if it gets error
       token = "ERROR: No Such Token";
       return token;
     }
     else if(index < 0)
     {
+      // Never found a '-' character -- return remaining message
       token = msg;
       return token;
     }
     else if(i == num)
     {
-      //this is the token to get
-      //xbee.println("grab this token");
+      // This is the token we want
       token = msg.substring(0,index);
       return token;
     }
+    // Remove earlier part of message, if not the token we want
     msg = msg.substring(index+1);
     i++;
   }
@@ -42,35 +50,32 @@ String getToken(String msg, const int num)
 //      asking for 3rd token returns "this-work"s
 String getTokenToEnd(String msg, const int num)
 {
-  //xbee.print("num: ");xbee.println(num);
   String token = "";
   int index = -1;
   int to = 0;
   int i = 0;
   while(i <= num)
   {
-    //xbee.println(msg);
-    //xbee.print("i: ");xbee.println(i);
     index = msg.indexOf("-", 1);
-    //xbee.print("index: ");xbee.println(index);
     if (index + i < 0)
     {
-      //error
+      // Error -- I don't think code currently cares if it gets error
       token = "ERROR: No Such Token";
       return token;
     }
     else if(index < 0)
     {
+      // Never found a '-' character -- return remaining message
       token = msg;
       return token;
     }
     else if(i == num)
     {
-      //this is the token to get
-      //xbee.println("grab this token");
+      // This is the token we want
       token = msg;
       return token;
     }
+    // Remove earlier part of message, if not the token we want
     msg = msg.substring(index+1);
     i++;
   }
@@ -78,10 +83,14 @@ String getTokenToEnd(String msg, const int num)
 }
 
 int getLen(String x){
- return x.toInt(); 
+   // returns the String interpreted as an integer
+   // I don't think I use this anymore...
+   return x.toInt(); 
 }
 
-//returns a 4-byte string corresponding to the value of x
+// returns a 4-byte string corresponding to the value of x
+// Used for padding integer values to a fixed length
+//   Example: byteLen(53) returns "0053"
 String byteLen(int x){
   String str = String(x);
   switch(str.length()){
@@ -103,8 +112,9 @@ String byteLen(int x){
   return str;
 }
 
-//string is 3 concatenated 4byte strings
-//e.g (255,50,105) is 025500500105
+// string is 3 concatenated 4byte strings
+// e.g (255,50,105) is 025500500105
+// Converts that string to a Color -- defined in Shiftbrite.h
 Color stringToRGB(String str){
   int rgb[3];
   Color ret;
@@ -123,6 +133,9 @@ Color stringToRGB(String str){
 
 Color setName(Color a)
 {
+  // Sets the name of the color to it's rgb values
+  //  Example: For Color with rgb (255,50,105)
+  //                name becomes "025500500105"
   String tmp = "";
   tmp += byteLen(a.r);
   tmp += byteLen(a.g);
@@ -132,6 +145,8 @@ Color setName(Color a)
 }
 
 String rgbToString(int* rgb){
+  // Converts integer array to String
+  // I don't think I use this anymore
   String tmp = "";
   for(int i = 0; i < 3; i++){
     tmp +=  byteLen(rgb[i]);

@@ -1,16 +1,13 @@
 /*
-  Xbee1
-  D. Thiebaut
+  This code is meant to be loaded on an Arduino based HR monitor for use with
+  the Shaking Table @Boston Children's Hospital by Jason Kahn
   
-  Makes Arduino send 1 character via XBee wireless to another XBee connected
-  to a computer via a USB cable. 
-
-  The circuit: 
-  * RX is digital pin 2 (connect to TX of XBee)
-  * TX is digital pin 3 (connect to RX of XBee)
- 
-  Based on a sketch created back in the mists of time by Tom Igoe
-  itself based on Mikal Hart's example
+  HR monitor has 2 functions
+    - Measure and Report HR and HR Variability
+    - Indicate User by color -- currently uses shiftbrite for this
+  
+  You need to install ShiftBrite.h in your Arduino Libraries
+  Shiftbrite Library found at github.com/chris-smith/ShiftBrite
  
 */
 
@@ -29,7 +26,7 @@ boolean registered;  //  tracks whether this slave is registered with master
 char c = 'A';
 int  pingPong = 1;
 String msg_rcv;
-ShiftBrite shift(1);     //declare a shiftbrite system. Only has 1 shiftbrite
+ShiftBrite shift(1);     //declare a shiftbrite system. HR only has 1 shiftbrite
 Color color = {"",0,0,0};
 
 int pulsePin = A0;                 // Pulse Sensor purple wire connected to analog pin 0
@@ -47,31 +44,46 @@ volatile boolean Pulse = false;     // true when pulse wave is high, false when 
 volatile boolean QS = false;        // becomes true when Arduoino finds a beat.
 
 void setup()  {
+   // Serial used for debugging -- interferes with XBEE
    //Serial.begin(115200);
    //Serial.println( "Arduino started sending bytes via XBee" );
 
-   // set the data rate for the SoftwareSerial port
+   // set the data rate for the SoftwareSerial port -- Need to talk FAST
    xbee.begin( 57600 );
+   // HR samples at 500Hz -- ensured by hardware interrupt
    interruptSetup();
+   // This Xbee is a slaved to the table. Will get commands from it
    listenTo = "table";
    slaveID = "";
+   
+   // used for assigning random slaveID upon register
    randomSeed(analogRead(openAPin));
+   
+   // timeout used when waiting for Xbee message
    timeout = 5000;
    registered = false;
+   
+   // set shiftbrite to be off, until HR is registered with table
    shift.turnOff(0);
 }
 
 void loop()  
 {  
+  // Get msg
   msg_rcv = waitForXbee();
-  xbee.println(msg_rcv);
+  
+  //xbee.println(msg_rcv); // echo message for debugging
+  
+  // Received Message handler
   handleMsg(msg_rcv);
   //if receives no relevant msgs for some time, reset
-  delay(100);
+  
+  delay(20);
 }
 
 //Unique ID's are 5
 String assignUniqueID(){
+  // Determines a unique ID for this HR monitor
   long rand = random(5E6); //max str length is 6
   String id = String(rand, HEX);
   while (id.length() < 6){
