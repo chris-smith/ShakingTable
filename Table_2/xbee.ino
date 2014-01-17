@@ -36,7 +36,7 @@ void newHRMonitors()
       // get the id of the HR monitor
       String id = getToken(msg, 1);
       // check if duplicate id
-      if (!isValidID(id)){
+      if ( !isValidID(id) ){
         // get color of HR monitor
         String color = getToken(msg, 2);
         ids[numUsers] = id;
@@ -143,28 +143,26 @@ void handleMsg(String msg)
   String id = getToken(msg, 1);
   String data = getTokenToEnd(msg, 1);
   String reply = "";
-  //if(id == listenTo)
-  //{
-    // only called if msg is from master
-    switch(code)
-    {
-      /*case 'R':
-        //reply = "registered with " + assignUniqueID();
-        break;
-      case 'H':
-        //reply = "here's my heart rate: " + data;
-        break;*/
-      
-      // Should add case for Master asking to unregister HR monitor
-      case 'C':
-        // Change color
-        handleColor(data);
-        break;
-      default:
-        reply = "";
-        break;
-    }
-  //}
+  // only called if msg is from master
+  switch(code)
+  {
+    /*  These not implemented
+    case 'U':
+      // Unregister HR monitor
+      break;
+    case 'T':
+      // Change threshold for HR monitor
+      break;
+    */
+    // Should add case for Master asking to unregister HR monitor
+    case 'C':
+      // Change color
+      handleColor(data);
+      break;
+    default:
+      reply = "";
+      break;
+  }
   
   // I don't think I need this anymore
   if(reply != "")

@@ -23,13 +23,12 @@ ShiftRegister shift_register(4);
 
 //    XBEE VARS
 SoftwareSerial xbee(2,5); // RX, TX
+
 //These variables are initialized in setup()
 String listenTo;     //  the ID this xbee will listen to for commands rather than
                      //    confirmations
 String slaveID;      //  this xbee's unique ID
 long timeout;        //  time spent waiting for message from listenTo
-boolean registered;  //  tracks whether this slave is registered with master
-
 
 // Tracks user data
 int numUsers;
@@ -40,14 +39,14 @@ boolean flashing[maxUsers];   // determines whether to flash lights (if HR > thr
 String ids[maxUsers];         // holds ids for each HR
 String colors[maxUsers];      // holds colors for each HR
 
-// debug
+// debugging
 boolean ascend;      // for testing shift register output
 
 void setup()
 {
   // Start XBee
   xbee.begin(57600);
-  xbee.println("starting");
+  //xbee.println("starting");
   
   //  no HR's registered at start
   numUsers = 0;
@@ -77,11 +76,12 @@ void loop()
 {
   // check for new HR monitors
   newHRMonitors();
+  
   // Ask for HR Values
   queryHeartRates();
+  
   // Set indicator Light Levels
   setOutputs();
-  // shiftbrite.setColor(3,"red");
   
   // Send Master user data, get commands
   // talking with master may need to be implemented differently
