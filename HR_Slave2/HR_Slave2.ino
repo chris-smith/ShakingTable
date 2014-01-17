@@ -6,6 +6,7 @@
     - Measure and Report HR and HR Variability
     - Indicate User by color -- currently uses shiftbrite for this
   
+  ----REQUIRED----
   You need to install ShiftBrite.h in your Arduino Libraries
   Shiftbrite Library found at github.com/chris-smith/ShiftBrite
  
@@ -26,14 +27,14 @@ boolean registered;  //  tracks whether this slave is registered with master
 char c = 'A';
 int  pingPong = 1;
 String msg_rcv;
-ShiftBrite shift(1);     //declare a shiftbrite system. HR only has 1 shiftbrite
+ShiftBrite shift(1);                //declare a shiftbrite system. HR only has 1 shiftbrite
 Color color = {"",0,0,0};
 
-int pulsePin = A0;                 // Pulse Sensor purple wire connected to analog pin 0
-int blinkPin = 13;                // pin to blink led at each beat
-int fadePin = 5;                  // pin to do fancy classy fading blink at each beat
-int fadeRate = 0;                 // used to fade LED on with PWM on fadePin
-int openAPin = A5;                // set this to any open analog pin. Used to seed random number
+int pulsePin = A0;                  // Signal wire connected to analog pin 0
+int blinkPin = 13;                  // pin to blink led at each beat
+int fadePin = 5;                    // pin to do fancy classy fading blink at each beat
+int fadeRate = 0;                   // used to fade LED on with PWM on fadePin
+int openAPin = A5;                  // set this to any open analog pin. Used to seed random number
 
 //interrupt variables. volatile because they hold data during interrupt service routine
 volatile int BPM;                   // used to hold the pulse rate
@@ -71,17 +72,17 @@ void loop()
 {  
   // Get msg
   msg_rcv = waitForXbee();
-  
   //xbee.println(msg_rcv); // echo message for debugging
   
   // Received Message handler
   handleMsg(msg_rcv);
-  //if receives no relevant msgs for some time, reset
+  
+  //if receives no relevant msgs for some time, implement reset
   
   delay(20);
 }
 
-//Unique ID's are 5
+
 String assignUniqueID(){
   // Determines a unique ID for this HR monitor
   long rand = random(5E6); //max str length is 6

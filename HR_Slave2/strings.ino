@@ -133,6 +133,7 @@ Color stringToRGB(String str){
   return ret;
 }
 
+// color struct defined in ShiftBrite.h
 Color setName(Color a)
 {
   // Sets the name of the color to it's rgb values

@@ -1,8 +1,8 @@
 /* THIS CONTAINS XBEE IMPLEMENTATION FOR THE HR SLAVE
 
-  IN SOME INSTANCES, MULTIPLE CALL/RESPONSE
-  ARE MADE FOR SAME COMMAND IN ORDER TO CUT
-  DOWN ON MESSAGE LENGTH
+  In some instances, multiple call/response
+  are made for the same command in order to cut
+  down on message length.
       Messages need to be sent fast enough to ensure they aren't 
       interrupted by HR sampling interrupt, causes garbled message
       Xbee currently talks at 57600 -- if you get 115200 to be stable, it
@@ -16,7 +16,7 @@
 
 Functions:
   handleRegister() - called when register request is received from master
-  handleHeartRate() - called when heartrate request is received from master
+  handleHeartRate() - called when heartrate data is requested by master
   handleVariability() - called when variability data is requested by master
   handleColor() - called when color change request is received from master
   
@@ -173,10 +173,11 @@ String waitForXbee()
 
 String readXbee(){
   //  Reads and returns message at Xbee port
-  //  Messages should terminate should newline -- '\n'
+  //  Messages should terminate with newline -- '\n'
   String msg = "";
   boolean breakRead = false;
   String err = "";
+  
   // if there is something at the xbee's port, read it
   while (xbee.available() > 0){
     // get the next character
