@@ -30,7 +30,15 @@ String listenTo;     //  the ID this xbee will listen to for commands rather tha
 String slaveID;      //  this xbee's unique ID
 long timeout;        //  time spent waiting for message from listenTo
 
-// Tracks user data
+// Tracks user data -- maybe put all of these in a struct?
+/*  
+    struct User {
+      int heart_rate, threshold, level;
+      string ids;
+      Color color;
+    };
+    User users[maxUsers];
+*/
 int numUsers;
 int heart_rates[maxUsers];    // holds heart rate for each HR
 int thresholds[maxUsers];     // holds threshold for each HR
