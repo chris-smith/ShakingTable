@@ -47,7 +47,7 @@ void loop() {
     power = input;
     last_input = millis();
   } else if (millis() - last_input > WAIT_FOR_STOP) {
-    power = map(analogRead(A0), 0, 1024, 0, 120);
+    power = map(analogRead(A0), 0, 1024, 0, 150);
   }
     
   analogWrite(RenablePin, power);

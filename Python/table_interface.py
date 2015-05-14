@@ -1,5 +1,10 @@
-import serial, pygame, sys, time, os, random, io, re, datetime
+#Note: having some problems acccessing thresholds from the thread. consider making it a 
+# global variable and/ or using lock more effectively. once this works try 
+# packaging into an app
+
+import serial, pygame, sys, time, os, random, io, re, datetime, logging
 from pygame.locals import *
+import threading
 import Table.Background, Table.IntroScreen, Table.GameScreen #Table.PlayerList, Table.Player, 
 
 WIDTH = 650
@@ -11,6 +16,11 @@ MID_POWER = 80
 
 serRead = [serial.Serial('/dev/tty.usbmodem1d1111', 9600), serial.Serial('/dev/tty.usbmodem1d1121', 9600)]
 serWrite = serial.Serial('/dev/tty.usbmodem1421', 9600)
+thresholds = [70, 70]
+heartRates = [0, 0]
+
+logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] (%(threadName)-10s) %(message)s',)
+lock = threading.Lock()
 
 # dummy variables
 # serRead = ['/dev/tty.usbmodem1d1111','/dev/tty.usbmodem1d1121']
@@ -33,7 +43,6 @@ def introLoop():
 	screen = pygame.display.get_surface()
 	background = Table.Background.Background(screen)
 	introScreen = Table.IntroScreen.IntroScreen(screen)
-	print "introLoop!"
 	while True:
 		action = introInput(pygame.event.get())
 		if (action):
@@ -97,15 +106,24 @@ def introLoop():
 		introScreen.draw()
 		pygame.display.flip()
 
-def gameLoop(players=2, thresholds=(70, 70)):
-	print str(players) + ", " + str(thresholds)
-	screen  = pygame.display.get_surface()
-	background = Table.Background.Background(screen)
-	gameScreen = Table.GameScreen.GameScreen(screen, players, thresholds)
-	dummy_rate = [50,50]
-	heartRates = [0, 0]
-	motorPower = [0, 0]
+def gameLoop(players=2, thresholds=[70, 70]):
+	print "gameLoop"
+	gameThread = threading.Thread(name="gameThread", target=pygameLoop, args=(players,thresholds,))
+	serialThread = threading.Thread(name="serialThread", target=serialLoop, args=(thresholds,))
+	# pygameLoop(players,thresholds)
+	# gameThread.start()
+	serialThread.start()
+	pygameLoop(players,thresholds)
 
+	# gameThread.join()
+	# serialThread.join()
+
+	return False
+
+def serialLoop(thresholds):
+	logging.debug('Starting')
+	dummy_rate = [50,50]
+	motorPower = [0, 0]
 	while True:
 		for s in serRead:			
 			index = serRead.index(s)
@@ -120,14 +138,53 @@ def gameLoop(players=2, thresholds=(70, 70)):
 			else:
 				motorPower[index] = 0
 			print "{0},{1},{2},{3}".format(index, datetime.datetime.now(), heartRates[index], motorPower[index])
-			time.sleep(0.5)
+			# time.sleep(0.5)
+		serWrite.write(chr(max(motorPower)))
 
+def pygameLoop(players, thresholds):	
+	logging.debug('Starting')
+	screen  = pygame.display.get_surface()
+	background = Table.Background.Background(screen)
+	gameScreen = Table.GameScreen.GameScreen(screen, players, thresholds)
+
+	while True:
+		lock.acquire()
+		action = introInput(pygame.event.get())
+		if (action):
+			if ('MOUSEMOVE' in action):
+				r = gameScreen.P1Up.get_rect()
+				if detectHit(gameScreen._1pUpArrowPos, r.bottomright, action['MOUSEMOVE'], (0,0)):
+					gameScreen.P1Up.highlight()
+				else:
+					gameScreen.P1Up.unhighlight()
+				r = gameScreen.P1Down.get_rect()
+				if detectHit(gameScreen._1pDownArrowPos, r.bottomright, action['MOUSEMOVE'], (0,0)):
+					gameScreen.P1Down.highlight()
+				else:
+					gameScreen.P1Down.unhighlight()
+				r = gameScreen.P2Up.get_rect()
+				if detectHit(gameScreen._2pUpArrowPos, r.bottomright, action['MOUSEMOVE'], (0,0)):
+					gameScreen.P2Up.highlight()
+				else:
+					gameScreen.P2Up.unhighlight()
+				r = gameScreen.P2Down.get_rect()
+				if detectHit(gameScreen._2pDownArrowPos, r.bottomright, action['MOUSEMOVE'], (0,0)):
+					gameScreen.P2Down.highlight()
+				else:
+					gameScreen.P2Down.unhighlight()
+			if ('MOUSEPRESS' in action):
+				if gameScreen.P1Up.selected:
+					gameScreen.IncrementThreshold(player=1)
+				if gameScreen.P1Down.selected:
+					gameScreen.IncrementThreshold(player=1,incVal=-1)
+				if gameScreen.P2Up.selected:
+					gameScreen.IncrementThreshold(player=2)
+				if gameScreen.P2Down.selected:
+					gameScreen.IncrementThreshold(player=2,incVal=-1)
 		background.draw()
 		gameScreen.draw(heartRates)
 		pygame.display.flip()
-		serWrite.write(chr(max(motorPower)))
-
-	return False
+		lock.release()
 
 def detectHit(box1Pos, box1Size, box2Pos, box2Size):
 	if ((box1Pos[0] <= box2Pos[0] + box2Size[0]) and 
